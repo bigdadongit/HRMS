@@ -57,27 +57,30 @@ export function LoginPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-2xl mb-4 shadow-lg">
                 <Building2 className="text-white" size={32} />
               </div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Welcome Back</h1>
-              <p className="text-[var(--text-secondary)]">Sign in to your HRMS account</p>
+              <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">WorkForce Pro</h1>
+              <p className="text-[var(--text-secondary)]">Welcome Back</p>
+              <p className="text-[var(--text-muted)] text-sm mt-1">Sign in to your account</p>
             </div>
 
             {error && <ErrorAlert message={error} onDismiss={() => setError('')} />}
             {success && <SuccessAlert message={success} onDismiss={() => setSuccess('')} />}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="form-group">
                 <label htmlFor="email" className="form-label">
                   Email Address
                 </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 text-[var(--text-muted)]">
+                    <Mail size={20} />
+                  </div>
                   <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
-                    className="input pl-10"
+                    className="flex-1 bg-transparent px-4 py-4 placeholder:text-[var(--text-muted)] focus:outline-none"
                     required
                   />
                 </div>
@@ -87,15 +90,17 @@ export function LoginPage() {
                 <label htmlFor="password" className="form-label">
                   Password
                 </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 text-[var(--text-muted)]">
+                    <Lock size={20} />
+                  </div>
                   <input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="input pl-10"
+                    className="flex-1 bg-transparent px-4 py-4 placeholder:text-[var(--text-muted)] focus:outline-none"
                     required
                   />
                 </div>
@@ -104,18 +109,19 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn btn-primary w-full btn-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 rounded-xl text-lg font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)' }}
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="spinner w-5 h-5 border-2"></div>
+                  <span className="flex items-center justify-center gap-3">
+                    <div className="spinner w-5 h-5 border-2 border-white"></div>
                     Signing in...
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Sign In
-                    <ArrowRight size={18} />
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span>Sign In</span>
+                    <ArrowRight size={20} />
+                  </div>
                 )}
               </button>
             </form>
@@ -123,7 +129,7 @@ export function LoginPage() {
         </div>
 
         <p className="text-center text-[var(--text-muted)] text-sm mt-6">
-          Secure login powered by HRMS Enterprise Platform
+          Secure login powered by WorkForce Pro Enterprise Platform
         </p>
       </div>
     </div>
