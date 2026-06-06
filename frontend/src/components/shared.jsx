@@ -1,130 +1,215 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { LogOut, Home, Users, Calendar, FileText, User, X, Check, AlertCircle, Loader2 } from 'lucide-react'
 
-export function DashboardCard({ title, value, icon: Icon, color = 'blue', trend = null }) {
+export function DashboardCard({ title, value, icon: Icon, color = 'emerald', trend = null, description = null }) {
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
-    red: 'bg-red-100 text-red-600'
+    emerald: { bg: 'rgba(16, 185, 129, 0.15)', text: 'text-[var(--primary)]', border: 'rgba(16, 185, 129, 0.3)' },
+    blue: { bg: 'rgba(59, 130, 246, 0.15)', text: 'text-[var(--info)]', border: 'rgba(59, 130, 246, 0.3)' },
+    amber: { bg: 'rgba(245, 158, 11, 0.15)', text: 'text-[var(--warning)]', border: 'rgba(245, 158, 11, 0.3)' },
+    rose: { bg: 'rgba(239, 68, 68, 0.15)', text: 'text-[var(--danger)]', border: 'rgba(239, 68, 68, 0.3)' },
+    sky: { bg: 'rgba(14, 165, 233, 0.15)', text: 'text-sky-400', border: 'rgba(14, 165, 233, 0.3)' }
   }
 
+  const colors = colorClasses[color] || colorClasses.emerald
+
   return (
-    <div className="dashboard-card">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
-          {trend && (
-            <p className={`text-sm mt-2 ${trend.positive ? 'text-green-600' : 'text-red-600'}`}>
-              {trend.positive ? '↑' : '↓'} {trend.percentage}% {trend.label}
+    <div className="card card-glass">
+      <div className="card-body">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">{title}</p>
+            <p className="text-3xl font-bold text-[var(--text-primary)]">
+              {value}
             </p>
+            {description && (
+              <p className="text-sm text-[var(--text-secondary)] mt-1">{description}</p>
+            )}
+            {trend && (
+              <p className={`text-xs font-medium mt-2 ${trend > 0 ? 'text-[var(--primary)]' : 'text-[var(--danger)]'}`}>
+                {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
+              </p>
+            )}
+          </div>
+          {Icon && (
+            <div className={`${colors.bg} ${colors.text} p-3 rounded-xl border ${colors.border}`}>
+              <Icon size={24} />
+            </div>
           )}
         </div>
-        {Icon && (
-          <div className={`${colorClasses[color]} p-4 rounded-lg`}>
-            <Icon size={32} />
-          </div>
-        )}
       </div>
     </div>
   )
 }
 
-export function Sidebar({ role, onLogout }) {
-  const menuItems = {
-    admin: [
-      { label: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
-      { label: 'Employees', href: '/admin/employees', icon: '👥' },
-      { label: 'Attendance', href: '/admin/attendance', icon: '📅' },
-      { label: 'Leave Requests', href: '/admin/leaves', icon: '📋' }
-    ],
-    hr: [
-      { label: 'Dashboard', href: '/hr/dashboard', icon: '📊' },
-      { label: 'Employees', href: '/hr/employees', icon: '👥' },
-      { label: 'Leave Requests', href: '/hr/leaves', icon: '📋' },
-      { label: 'Recruitment', href: '/hr/recruitment', icon: '💼' }
-    ],
-    manager: [
-      { label: 'Dashboard', href: '/manager/dashboard', icon: '📊' },
-      { label: 'Team', href: '/manager/team', icon: '👥' },
-      { label: 'Attendance', href: '/manager/attendance', icon: '📅' }
-    ],
-    employee: [
-      { label: 'Dashboard', href: '/employee/dashboard', icon: '📊' },
-      { label: 'Attendance', href: '/employee/attendance', icon: '📅' },
-      { label: 'Leave Requests', href: '/employee/leaves', icon: '📋' }
-    ]
+export function Sidebar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
   }
 
-  const items = menuItems[role] || []
+  const dashboardPath = {
+    admin: '/admin/dashboard',
+    hr: '/hr/dashboard',
+    manager: '/manager/dashboard',
+    employee: '/employee/dashboard'
+  }[user?.role] || '/login'
+
+  const getMenuItems = () => {
+    const baseItems = [
+      { label: 'Dashboard', href: dashboardPath, icon: Home }
+    ]
+
+    const roleItems = {
+      admin: [
+        { label: 'Employees', href: '/employees', icon: Users },
+        { label: 'Attendance', href: '/attendance', icon: Calendar },
+        { label: 'Leave Management', href: '/leaves', icon: FileText }
+      ],
+      hr: [
+        { label: 'Employees', href: '/employees', icon: Users },
+        { label: 'Attendance', href: '/attendance', icon: Calendar },
+        { label: 'Leave Management', href: '/leaves', icon: FileText }
+      ],
+      manager: [
+        { label: 'Attendance', href: '/attendance', icon: Calendar },
+        { label: 'Leave Management', href: '/leaves', icon: FileText }
+      ],
+      employee: [
+        { label: 'Attendance', href: '/attendance', icon: Calendar },
+        { label: 'Leave Management', href: '/leaves', icon: FileText },
+        { label: 'My Profile', href: '/profile', icon: User }
+      ]
+    }
+
+    return [...baseItems, ...(roleItems[user?.role] || [])]
+  }
+
+  const menuItems = getMenuItems()
 
   return (
-    <div className="w-64 bg-gray-900 text-white h-screen fixed left-0 top-0 overflow-y-auto">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">HRMS</h1>
-        <p className="text-gray-400 text-sm mt-1">Human Resource Management</p>
+    <aside className="w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] h-screen fixed left-0 top-0 flex flex-col glass-strong">
+      <div className="p-5 border-b border-[var(--border)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">H</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-[var(--text-primary)]">HRMS</h1>
+            <p className="text-xs text-[var(--text-muted)]">Enterprise Platform</p>
+          </div>
+        </div>
       </div>
 
-      <nav className="mt-8">
-        {items.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className="px-6 py-3 flex items-center text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
-          >
-            <span className="mr-3">{item.icon}</span>
-            {item.label}
-          </Link>
-        ))}
+      <nav className="flex-1 p-4">
+        {menuItems.map((item) => {
+          const IconComponent = item.icon
+          const isActive = location.pathname === item.href
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-lg'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              <IconComponent size={18} />
+              <span>{item.label}</span>
+            </Link>
+          )
+        })}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-[var(--border)]">
+        <div className="mb-4 p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)]">
+          <p className="text-xs text-[var(--text-muted)] truncate mb-1">{user?.email}</p>
+          <p className="text-xs font-medium text-[var(--primary)] capitalize">{user?.role}</p>
+        </div>
         <button
-          onClick={onLogout}
-          className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white transition-colors"
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-xl text-sm font-medium transition-all duration-200 border border-transparent hover:border-[var(--border)]"
         >
+          <LogOut size={16} />
           Logout
         </button>
       </div>
-    </div>
+    </aside>
   )
 }
 
-export function LoadingSpinner() {
+export function LoadingSpinner({ text = 'Loading...' }) {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading...</p>
+        <div className="flex justify-center mb-4">
+          <Loader2 className="spinner text-indigo-600" size={32} />
+        </div>
+        <p className="text-gray-600 font-medium">{text}</p>
       </div>
     </div>
   )
 }
 
-export function ErrorAlert({ message, onClose }) {
+export function ErrorAlert({ message, onDismiss }) {
   return (
-    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex justify-between items-center">
-      <span>{message}</span>
-      {onClose && (
-        <button onClick={onClose} className="text-red-700 hover:text-red-900">
-          ✕
+    <div className="alert alert-error">
+      <AlertCircle size={20} />
+      <span className="flex-1">{message}</span>
+      {onDismiss && (
+        <button onClick={onDismiss} className="hover:bg-red-100 rounded p-1 transition-colors">
+          <X size={18} />
         </button>
       )}
     </div>
   )
 }
 
-export function SuccessAlert({ message, onClose }) {
+export function SuccessAlert({ message, onDismiss }) {
   return (
-    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
-      <span>{message}</span>
-      {onClose && (
-        <button onClick={onClose} className="text-green-700 hover:text-green-900">
-          ✕
+    <div className="alert alert-success">
+      <Check size={20} />
+      <span className="flex-1">{message}</span>
+      {onDismiss && (
+        <button onClick={onDismiss} className="hover:bg-emerald-100 rounded p-1 transition-colors">
+          <X size={18} />
         </button>
       )}
     </div>
   )
 }
+
+export function WarningAlert({ message, onDismiss }) {
+  return (
+    <div className="alert alert-warning">
+      <AlertCircle size={20} />
+      <span className="flex-1">{message}</span>
+      {onDismiss && (
+        <button onClick={onDismiss} className="hover:bg-amber-100 rounded p-1 transition-colors">
+          <X size={18} />
+        </button>
+      )}
+    </div>
+  )
+}
+
+export function InfoAlert({ message, onDismiss }) {
+  return (
+    <div className="alert alert-info">
+      <AlertCircle size={20} />
+      <span className="flex-1">{message}</span>
+      {onDismiss && (
+        <button onClick={onDismiss} className="hover:bg-indigo-100 rounded p-1 transition-colors">
+          <X size={18} />
+        </button>
+      )}
+    </div>
+  )
+}
+

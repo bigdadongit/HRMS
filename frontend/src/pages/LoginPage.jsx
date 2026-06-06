@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { authService } from '../services/authService'
 import { ErrorAlert, SuccessAlert } from '../components/shared'
+import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -28,7 +29,6 @@ export function LoginPage() {
         login(user, access_token, employee)
         setSuccess('Login successful! Redirecting...')
 
-        // Redirect based on role
         setTimeout(() => {
           if (user.role === 'admin') {
             navigate('/admin/dashboard')
@@ -49,67 +49,82 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900">HRMS</h1>
-            <p className="text-gray-600 mt-2">Human Resource Management System</p>
-          </div>
-
-          {error && <ErrorAlert message={error} onClose={() => setError('')} />}
-          {success && <SuccessAlert message={success} onClose={() => setSuccess('')} />}
-
-          <form onSubmit={handleSubmit} className="space-y-6 mt-8">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="input-field"
-                required
-              />
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center p-4">
+      <div className="w-full max-w-lg">
+        <div className="card card-glass">
+          <div className="card-body p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-2xl mb-4 shadow-lg">
+                <Building2 className="text-white" size={32} />
+              </div>
+              <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">Welcome Back</h1>
+              <p className="text-[var(--text-secondary)]">Sign in to your HRMS account</p>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="input-field"
-                required
-              />
-            </div>
+            {error && <ErrorAlert message={error} onDismiss={() => setError('')} />}
+            {success && <SuccessAlert message={success} onDismiss={() => setSuccess('')} />}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@company.com"
+                    className="input pl-10"
+                    required
+                  />
+                </div>
+              </div>
 
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 font-semibold mb-2">Demo Credentials:</p>
-            <ul className="text-xs text-gray-600 space-y-1">
-              <li>Admin: admin@hrms.com / admin123</li>
-              <li>HR: hr@hrms.com / hr123</li>
-              <li>Manager: manager@hrms.com / manager123</li>
-              <li>Employee: employee@hrms.com / employee123</li>
-            </ul>
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="input pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary w-full btn-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="spinner w-5 h-5 border-2"></div>
+                    Signing in...
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    Sign In
+                    <ArrowRight size={18} />
+                  </span>
+                )}
+              </button>
+            </form>
           </div>
         </div>
+
+        <p className="text-center text-[var(--text-muted)] text-sm mt-6">
+          Secure login powered by HRMS Enterprise Platform
+        </p>
       </div>
     </div>
   )

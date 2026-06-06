@@ -24,10 +24,20 @@ def create_app(config_name='development'):
     from app.routes.auth_routes import auth_bp
     from app.routes.dashboard_routes import dashboard_bp
     from app.routes.employee_routes import employee_bp
+    from app.routes.attendance_routes import attendance_bp
+    from app.routes.leave_routes import leave_bp
+    from app.routes.resume_routes import resume_bp
+    from app.routes.interview_routes import interview_bp
+    from app.routes.copilot_routes import copilot_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(employee_bp)
+    app.register_blueprint(attendance_bp)
+    app.register_blueprint(leave_bp)
+    app.register_blueprint(resume_bp)
+    app.register_blueprint(interview_bp)
+    app.register_blueprint(copilot_bp)
 
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

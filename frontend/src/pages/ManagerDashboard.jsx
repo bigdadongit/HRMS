@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Sidebar, DashboardCard, LoadingSpinner } from '../components/shared'
 import { useAuth } from '../hooks/useAuth'
 import { dashboardService } from '../services/authService'
-import { Users, TrendingUp, Calendar, Award } from 'lucide-react'
+import { Users, TrendingUp, Calendar, Award, ArrowRight, CheckCircle, AlertTriangle } from 'lucide-react'
 
 export function ManagerDashboard() {
   const navigate = useNavigate()
@@ -28,78 +28,124 @@ export function ManagerDashboard() {
     }
   }
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
 
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="flex">
-      <Sidebar role="manager" onLogout={handleLogout} />
+    <div className="flex min-h-screen">
+      <Sidebar />
 
-      <div className="ml-64 flex-1 min-h-screen bg-gray-100">
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900">Manager Dashboard</h1>
-            <p className="text-gray-600 mt-2">Welcome, {user?.email}</p>
+      <div className="flex-1 ml-64">
+        <div className="p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Manager Dashboard</h1>
+            <p className="text-sm text-[var(--text-secondary)]">Welcome, {user?.email}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <DashboardCard
               title="Team Size"
               value={dashboardData?.team_size || 0}
               icon={Users}
-              color="blue"
+              color="emerald"
+              description="Team members"
             />
             <DashboardCard
               title="Team Attendance"
               value={`${dashboardData?.team_attendance || 0}%`}
               icon={Calendar}
-              color="green"
+              color="blue"
+              description="Today's attendance"
             />
             <DashboardCard
               title="Team Performance"
               value={dashboardData?.team_performance || 'N/A'}
               icon={TrendingUp}
-              color="purple"
+              color="sky"
+              description="Overall score"
             />
             <DashboardCard
-              title="Pending Leave Requests"
+              title="Pending Leaves"
               value={dashboardData?.team_leaves_pending || 0}
               icon={Award}
-              color="orange"
+              color="amber"
+              description="Awaiting approval"
             />
           </div>
 
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="dashboard-card">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Team Management</h2>
-              <div className="space-y-3">
-                <button className="w-full btn-primary text-left">View Team Members</button>
-                <button className="w-full btn-secondary text-left">Attendance Records</button>
-                <button className="w-full btn-secondary text-left">Approve Leave Requests</button>
-                <button className="w-full btn-secondary text-left">Performance Reviews</button>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="card card-glass">
+              <div className="card-header">
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Team Management</h2>
+              </div>
+              <div className="card-body space-y-2">
+                <button className="w-full btn btn-secondary flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <Users size={16} />
+                    View Team Members
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+                <button 
+                  onClick={() => navigate('/attendance')}
+                  className="w-full btn btn-secondary flex items-center justify-between text-sm"
+                >
+                  <span className="flex items-center gap-2">
+                    <Calendar size={16} />
+                    Attendance Records
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+                <button 
+                  onClick={() => navigate('/leaves')}
+                  className="w-full btn btn-secondary flex items-center justify-between text-sm"
+                >
+                  <span className="flex items-center gap-2">
+                    <Award size={16} />
+                    Approve Leave Requests
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
+                <button className="w-full btn btn-secondary flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp size={16} />
+                    Performance Reviews
+                  </span>
+                  <ArrowRight size={16} />
+                </button>
               </div>
             </div>
 
-            <div className="dashboard-card">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Team Overview</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Present Today</span>
-                  <span className="font-bold text-lg">{Math.round((dashboardData?.team_attendance || 0) / 20)}/5</span>
+            <div className="card card-glass">
+              <div className="card-header">
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Team Overview</h2>
+              </div>
+              <div className="card-body space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-[var(--text-muted)]">Team Attendance Today</span>
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{Math.round((dashboardData?.team_attendance || 0) / 20)}/5</span>
+                  </div>
+                  <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2">
+                    <div
+                      className="bg-[var(--primary)] h-2 rounded-full"
+                      style={{ width: `${dashboardData?.team_attendance || 0}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-green-600 h-2 rounded-full"
-                    style={{ width: `${dashboardData?.team_attendance || 0}%` }}
-                  ></div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={16} className="text-[var(--text-muted)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Team Status</span>
+                  </div>
+                  <span className="badge badge-success">On Track</span>
                 </div>
-                <div className="flex justify-between items-center pt-4">
-                  <span className="text-gray-700">Pending Approvals</span>
-                  <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-bold">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-[var(--text-muted)]" />
+                    <span className="text-sm text-[var(--text-primary)]">Pending Approvals</span>
+                  </div>
+                  <span className="badge badge-warning">
                     {dashboardData?.team_leaves_pending || 0}
                   </span>
                 </div>

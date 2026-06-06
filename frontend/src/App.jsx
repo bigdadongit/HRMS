@@ -8,6 +8,15 @@ import { AdminDashboard } from './pages/AdminDashboard'
 import { HRDashboard } from './pages/HRDashboard'
 import { ManagerDashboard } from './pages/ManagerDashboard'
 import { EmployeeDashboard } from './pages/EmployeeDashboard'
+import { EmployeeManagement } from './pages/EmployeeManagement'
+import { AttendancePage } from './pages/AttendancePage'
+import { LeaveManagementPage } from './pages/LeaveManagementPage'
+import { EmployeeProfilePage } from './pages/EmployeeProfilePage'
+import { ResumeScreeningPage } from './pages/ResumeScreeningPage'
+import { InterviewRoomPage } from './pages/InterviewRoomPage'
+import { InterviewResultsPage } from './pages/InterviewResultsPage'
+import { InterviewAnalyticsPage } from './pages/InterviewAnalyticsPage'
+import { HRCopilotPage } from './pages/HRCopilotPage'
 import './index.css'
 
 function App() {
@@ -55,6 +64,92 @@ function App() {
             element={
               <ProtectedRoute requiredRoles={['employee']}>
                 <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Shared Routes - Employee Management */}
+          <Route
+            path="/employees"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <EmployeeManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Attendance Routes */}
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute requiredRoles={['employee', 'admin', 'hr', 'manager']}>
+                <AttendancePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Leave Management Routes */}
+          <Route
+            path="/leaves"
+            element={
+              <ProtectedRoute requiredRoles={['employee', 'admin', 'hr', 'manager']}>
+                <LeaveManagementPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profile Routes */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute requiredRoles={['employee', 'admin', 'hr', 'manager']}>
+                <EmployeeProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Resume Screening Routes */}
+          <Route
+            path="/resume-screening"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <ResumeScreeningPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Interview Routes */}
+          <Route
+            path="/interview-room"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <InterviewRoomPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/interview-results"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <InterviewResultsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/interview-analytics"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <InterviewAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* HR Copilot Routes */}
+          <Route
+            path="/hr-copilot"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr']}>
+                <HRCopilotPage />
               </ProtectedRoute>
             }
           />
