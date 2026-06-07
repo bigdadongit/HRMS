@@ -67,9 +67,10 @@ class ResumeService:
     def analyze_resume_with_gemini(resume_text, jd_text, api_key):
         """Analyze resume using Gemini API"""
         try:
-            # If google generative AI client isn't available, return default analysis
+            # If google generative AI client isn't available, fall back to lightweight local analysis
             if genai is None:
-                raise RuntimeError('Gemini client not available')
+                print('Gemini client not available: using local fallback analysis')
+                return ResumeService.simple_local_analysis(resume_text, jd_text)
 
             # Configure Gemini
             genai.configure(api_key=api_key)
@@ -126,16 +127,76 @@ class ResumeService:
 
         except Exception as e:
             print(f"Gemini API error: {str(e)}")
-            # Return default analysis if API fails
-            return {
-                "skills_found": [],
-                "missing_skills": [],
-                "experience_summary": "Unable to analyze",
-                "strengths": [],
-                "education_level": "Unknown",
-                "years_of_experience": 0,
-                "key_achievements": []
-            }
+            # Fall back to local analysis so screening returns meaningful scores
+            try:
+                return ResumeService.simple_local_analysis(resume_text, jd_text)
+            except Exception:
+                # Final safe default
+                return {
+                    "skills_found": [],
+                    "missing_skills": [],
+                    "experience_summary": "Unable to analyze",
+                    "strengths": [],
+                    "education_level": "Unknown",
+                    "years_of_experience": 0,
+                    "key_achievements": []
+                }
+
+    @staticmethod
+    def simple_local_analysis(resume_text, jd_text):
+        """Lightweight local analysis when Gemini is unavailable.
+
+        This extracts skills by scanning known keywords, pulls a years-of-experience
+        estimate from common patterns, and infers education level. It's deterministic
+        and useful for demo or offline mode.
+        """
+        resume_lower = resume_text.lower() if resume_text else ''
+        jd_lower = jd_text.lower() if jd_text else ''
+
+        # Skills
+        skills_found = ResumeService.extract_skills_from_text(resume_text)
+        jd_skills = ResumeService.extract_skills_from_text(jd_text)
+        missing_skills = [s for s in jd_skills if s not in skills_found]
+
+        # Years of experience estimation via common patterns like '5 years' or '5+ years'
+        years = 0
+        try:
+            match = re.search(r"(\d{1,2})\+?\s+years", resume_lower)
+            if match:
+                years = int(match.group(1))
+            else:
+                # fallback: look for 'experience: X years' style
+                match2 = re.search(r"experience\D{0,10}(\d{1,2})", resume_lower)
+                if match2:
+                    years = int(match2.group(1))
+        except Exception:
+            years = 0
+
+        # Education detection
+        if 'phd' in resume_lower or 'ph.d' in resume_lower:
+            education = "PhD"
+        elif 'master' in resume_lower or "ms" in resume_lower or "m.s." in resume_lower:
+            education = "Master's"
+        elif 'bachelor' in resume_lower or "ba" in resume_lower or "bs" in resume_lower:
+            education = "Bachelor's"
+        else:
+            education = "Other"
+
+        # Experience summary - first 200 chars
+        exp_summary = (resume_text[:200] + '...') if resume_text and len(resume_text) > 200 else (resume_text or '')
+
+        strengths = skills_found[:5]
+        key_achievements = []
+
+        return {
+            'skills_found': skills_found,
+            'missing_skills': missing_skills,
+            'experience_summary': exp_summary,
+            'strengths': strengths,
+            'education_level': education,
+            'years_of_experience': years,
+            'key_achievements': key_achievements
+        }
 
     @staticmethod
     def calculate_deterministic_score(analysis, jd_text):
