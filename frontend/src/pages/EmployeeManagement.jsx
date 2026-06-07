@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Users, Building, Briefcase, X } from 'lucide-react'
+import { Search, Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import apiClient from '../services/api'
 import { DashboardCard, Sidebar, LoadingSpinner, ErrorAlert, SuccessAlert } from '../components/shared'
 
@@ -119,117 +119,94 @@ export const EmployeeManagement = () => {
     setCurrentPage(1)
   }
 
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      'active': { class: 'badge-success', label: 'Active' },
-      'inactive': { class: 'badge-warning', label: 'Inactive' },
-      'terminated': { class: 'badge-danger', label: 'Terminated' }
-    }
-    const config = statusConfig[status] || statusConfig.inactive
-    return <span className={`badge ${config.class}`}>{config.label}</span>
-  }
-
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="flex h-screen bg-gray-100">
+  <Sidebar />
       
-      <div className="flex-1 ml-64">
+  <div className="flex-1 ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[rgba(59, 130, 246, 0.15)] rounded-xl flex items-center justify-center">
-                <Users className="text-[var(--info)]" size={20} />
-              </div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)]">Employee Management</h1>
-            </div>
-            <p className="text-[var(--text-secondary)] ml-13">Manage employee information and records</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Employee Management</h1>
+            <p className="text-gray-600">Manage employee information and records</p>
           </div>
 
           {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
           {success && <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />}
 
-          <div className="card card-glass">
-            <div className="card-header">
+          <div className="bg-white rounded-lg shadow">
+            {/* Header with Search and Add */}
+            <div className="p-6 border-b border-gray-200">
               <div className="flex gap-4 items-center">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)]" size={20} />
+                  <Search className="absolute left-3 top-3 text-gray-400" size={20} />
                   <input
                     type="text"
                     placeholder="Search by name, email, or department..."
                     value={searchQuery}
                     onChange={handleSearch}
-                    className="input pl-10"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <button
                   onClick={handleAdd}
-                  className="btn btn-primary"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
                 >
-                  <span className="flex items-center gap-2">
-                    <Plus size={18} />
-                    Add Employee
-                  </span>
+                  <Plus size={20} />
+                  Add Employee
                 </button>
               </div>
             </div>
 
+            {/* Table */}
             {loading ? (
               <LoadingSpinner />
             ) : (
               <>
-                <div className="table-container">
-                  <table className="table">
-                    <thead>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
                       <tr>
-                        <th>Employee</th>
-                        <th>Department</th>
-                        <th>Designation</th>
-                        <th>Status</th>
-                        <th className="text-right">Actions</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Name</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Email</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Department</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Designation</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Status</th>
+                        <th className="px-6 py-3 text-right font-semibold text-gray-700">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {employees.map((employee) => (
-                        <tr key={employee.id}>
-                          <td>
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-full flex items-center justify-center text-white font-semibold">
-                                {employee.first_name[0]}{employee.last_name[0]}
-                              </div>
-                              <div>
-                                <div className="font-medium text-[var(--text-primary)]">
-                                  {employee.first_name} {employee.last_name}
-                                </div>
-                                <div className="text-sm text-[var(--text-muted)]">{employee.email}</div>
-                              </div>
+                        <tr key={employee.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-gray-900">
+                              {employee.first_name} {employee.last_name}
                             </div>
                           </td>
-                          <td>
-                            <div className="flex items-center gap-2">
-                              <Building size={16} className="text-[var(--text-muted)]" />
-                              <span className="text-sm text-[var(--text-secondary)]">{employee.department || '-'}</span>
-                            </div>
+                          <td className="px-6 py-4 text-gray-600">{employee.email}</td>
+                          <td className="px-6 py-4 text-gray-600">{employee.department}</td>
+                          <td className="px-6 py-4 text-gray-600">{employee.designation}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              employee.status === 'active' 
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {employee.status}
+                            </span>
                           </td>
-                          <td>
-                            <div className="flex items-center gap-2">
-                              <Briefcase size={16} className="text-[var(--text-muted)]" />
-                              <span className="text-sm text-[var(--text-secondary)]">{employee.designation || '-'}</span>
-                            </div>
-                          </td>
-                          <td>{getStatusBadge(employee.status)}</td>
-                          <td className="text-right">
+                          <td className="px-6 py-4 text-right">
                             <div className="flex gap-2 justify-end">
                               <button
                                 onClick={() => handleEdit(employee)}
-                                className="btn btn-sm btn-secondary text-[var(--info)] hover:text-[var(--primary)] hover:border-[var(--primary)]"
+                                className="text-blue-600 hover:text-blue-800 p-1"
                               >
-                                <Edit2 size={16} />
+                                <Edit2 size={18} />
                               </button>
                               <button
                                 onClick={() => handleDelete(employee.id)}
-                                className="btn btn-sm btn-secondary text-[var(--danger)] hover:text-red-500 hover:border-red-500"
+                                className="text-red-600 hover:text-red-800 p-1"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={18} />
                               </button>
                             </div>
                           </td>
@@ -239,42 +216,41 @@ export const EmployeeManagement = () => {
                   </table>
                 </div>
 
-                <div className="card-footer">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-[var(--text-muted)]">
-                      Showing {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, totalEmployees)} of {totalEmployees} employees
+                {/* Pagination */}
+                <div className="p-6 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    Showing {(currentPage - 1) * perPage + 1} to {Math.min(currentPage * perPage, totalEmployees)} of {totalEmployees} employees
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-1 rounded ${
+                            currentPage === page
+                              ? 'bg-blue-600 text-white'
+                              : 'border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="btn btn-sm btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft size={16} />
-                      </button>
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                          <button
-                            key={page}
-                            onClick={() => setCurrentPage(page)}
-                            className={`btn btn-sm ${
-                              currentPage === page
-                                ? 'btn-primary'
-                                : 'btn-secondary'
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className="btn btn-sm btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight size={16} />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
                   </div>
                 </div>
               </>
@@ -283,126 +259,95 @@ export const EmployeeManagement = () => {
         </div>
       </div>
 
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="card card-glass w-full max-w-lg shadow-custom-lg">
-            <div className="card-header flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                {editingId ? 'Edit Employee' : 'Add Employee'}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-4">
+              {editingId ? 'Edit Employee' : 'Add Employee'}
+            </h2>
             
-            <form onSubmit={handleSubmit} className="card-body space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="form-group">
-                  <label className="form-label">First Name</label>
-                  <input
-                    type="text"
-                    placeholder="John"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    required
-                    className="input"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Last Name</label>
-                  <input
-                    type="text"
-                    placeholder="Doe"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    required
-                    className="input"
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Email</label>
                 <input
-                  type="email"
-                  placeholder="john@company.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  type="text"
+                  placeholder="First Name"
+                  value={formData.first_name}
+                  onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
                   required
-                  className="input"
+                  className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Phone</label>
-                <input
-                  type="tel"
-                  placeholder="+1 234 567 890"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Department</label>
                 <input
                   type="text"
-                  placeholder="Engineering"
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                  className="input"
+                  placeholder="Last Name"
+                  value={formData.last_name}
+                  onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                  required
+                  className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Designation</label>
-                <input
-                  type="text"
-                  placeholder="Software Engineer"
-                  value={formData.designation}
-                  onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
-                  className="input"
-                />
-              </div>
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-              <div className="form-group">
-                <label className="form-label">Joining Date</label>
-                <input
-                  type="date"
-                  value={formData.joining_date}
-                  onChange={(e) => setFormData({ ...formData, joining_date: e.target.value })}
-                  className="input"
-                />
-              </div>
+              <input
+                type="tel"
+                placeholder="Phone"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-              <div className="form-group">
-                <label className="form-label">Status</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="input select"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="terminated">Terminated</option>
-                </select>
-              </div>
+              <input
+                type="text"
+                placeholder="Department"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <input
+                type="text"
+                placeholder="Designation"
+                value={formData.designation}
+                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <input
+                type="date"
+                value={formData.joining_date}
+                onChange={(e) => setFormData({ ...formData, joining_date: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="terminated">Terminated</option>
+              </select>
 
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="btn btn-secondary flex-1"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-primary flex-1"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   {editingId ? 'Update' : 'Create'}
                 </button>
@@ -414,3 +359,5 @@ export const EmployeeManagement = () => {
     </div>
   )
 }
+
+export default EmployeeManagement

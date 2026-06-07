@@ -5,44 +5,44 @@
 @tailwind utilities;
 
 :root {
-  /* Premium Dark Theme Colors */
-  --bg-primary: #0a0a0b;
-  --bg-secondary: #141415;
-  --bg-tertiary: #1c1c1e;
-  --bg-elevated: #242427;
-  
-  /* Emerald/Teal Accent Colors */
-  --primary: #10b981;
-  --primary-hover: #059669;
-  --primary-light: #34d399;
-  --accent: #14b8a6;
-  
+  /* Light Professional Theme - WorkForce Pro */
+  --bg-primary: #f8fafc; /* page background */
+  --bg-secondary: #ffffff; /* cards, panels */
+  --bg-tertiary: #f1f5f9; /* subtle surfaces */
+  --bg-elevated: #eef2f7;
+
+  /* Vibrant Accent Colors (professional) */
+  --primary: #0ea5e9; /* sky/teal */
+  --primary-hover: #0284c7;
+  --primary-light: #7dd3fc;
+  --accent: #7c3aed; /* violet accent for depth */
+
   /* Status Colors */
-  --success: #10b981;
+  --success: #059669;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --info: #3b82f6;
-  
+  --info: #0ea5e9;
+
   /* Border Colors */
-  --border: #2a2a2d;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-accent: rgba(16, 185, 129, 0.3);
-  
+  --border: #e6eef6;
+  --border-subtle: rgba(14, 165, 233, 0.08);
+  --border-accent: rgba(14, 165, 233, 0.12);
+
   /* Text Colors */
-  --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --text-disabled: #52525b;
-  
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #334155; /* slate-600 */
+  --text-muted: #64748b; /* slate-400 */
+  --text-disabled: #94a3b8;
+
   /* Glassmorphism */
-  --glass-bg: rgba(20, 20, 21, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(14, 165, 233, 0.06);
+
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(12, 14, 23, 0.04);
+  --shadow-md: 0 6px 18px rgba(12, 14, 23, 0.08);
+  --shadow-lg: 0 20px 40px rgba(12, 14, 23, 0.12);
+  --shadow-glass: 0 12px 30px rgba(12, 14, 23, 0.08);
 }
 
 * {
@@ -394,9 +394,13 @@ body {
 }
 
 .glass-strong {
-  background: rgba(20, 20, 21, 0.95);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  /* Lighter elevated surface for sidebars/panels */
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(14, 165, 233, 0.06);
+  box-shadow: var(--shadow-md);
+  color: var(--text-primary);
 }
 
 /* Gradient text utility */

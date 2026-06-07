@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, TrendingUp, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Calendar, BarChart3 } from 'lucide-react'
 import apiClient from '../services/api'
 import { DashboardCard, Sidebar, LoadingSpinner, ErrorAlert } from '../components/shared'
 import { useAuth } from '../hooks/useAuth'
@@ -22,14 +22,17 @@ export const AttendancePage = () => {
       setLoading(true)
       setError(null)
       
+      // Get employee ID from user profile
       const profileRes = await apiClient.get('/employees/profile')
       const employeeId = profileRes.data.data.id
 
+      // Fetch monthly report
       const reportRes = await apiClient.get(
         `/attendance/monthly-report/${employeeId}?month=${month}&year=${year}`
       )
       setReport(reportRes.data.data)
 
+      // Fetch summary
       const summaryRes = await apiClient.get(`/attendance/summary/${employeeId}`)
       setSummary(summaryRes.data.data)
     } catch (err) {
@@ -39,46 +42,21 @@ export const AttendancePage = () => {
     }
   }
 
-  const getAttendanceStatus = (percentage) => {
-    if (percentage >= 90) return { color: 'emerald', label: 'Excellent' }
-    if (percentage >= 75) return { color: 'amber', label: 'Good' }
-    return { color: 'rose', label: 'Needs Improvement' }
-  }
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'present': return <CheckCircle size={16} />
-      case 'absent': return <XCircle size={16} />
-      case 'leave': return <Clock size={16} />
-      case 'half_day': return <AlertCircle size={16} />
-      default: return null
-    }
-  }
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'present': return 'bg-emerald-50 text-emerald-600 border-emerald-200'
-      case 'absent': return 'bg-rose-50 text-rose-600 border-rose-200'
-      case 'leave': return 'bg-sky-50 text-sky-600 border-sky-200'
-      case 'half_day': return 'bg-amber-50 text-amber-600 border-amber-200'
-      default: return 'bg-gray-50 text-gray-600 border-gray-200'
-    }
+  const getAttendancePercentageColor = (percentage) => {
+    if (percentage >= 90) return 'text-green-600'
+    if (percentage >= 75) return 'text-yellow-600'
+    return 'text-red-600'
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="flex h-screen bg-gray-100">
+  <Sidebar />
       
-      <div className="flex-1 ml-64">
+  <div className="flex-1 ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[rgba(59, 130, 246, 0.15)] rounded-xl flex items-center justify-center">
-                <Calendar className="text-[var(--info)]" size={20} />
-              </div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)]">Attendance</h1>
-            </div>
-            <p className="text-[var(--text-secondary)] ml-13">Track and view your attendance records</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance</h1>
+            <p className="text-gray-600">Track and view your attendance records</p>
           </div>
 
           {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
@@ -87,194 +65,142 @@ export const AttendancePage = () => {
             <LoadingSpinner />
           ) : (
             <>
+              {/* Summary Cards */}
               {summary && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <DashboardCard 
-                    title="Total Records" 
-                    value={summary.total_records} 
-                    color="blue"
-                    description="All attendance entries"
-                  />
-                  <DashboardCard 
-                    title="Present Days" 
-                    value={summary.present} 
-                    color="emerald"
-                    description="Days marked present"
-                  />
-                  <DashboardCard 
-                    title="Absent Days" 
-                    value={summary.absent} 
-                    color="rose"
-                    description="Days marked absent"
-                  />
-                  <DashboardCard 
-                    title="Leave Days" 
-                    value={summary.leave} 
-                    color="sky"
-                    description="Days on leave"
-                  />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                  <DashboardCard title="Total Records" value={summary.total_records} />
+                  <DashboardCard title="Present" value={summary.present} />
+                  <DashboardCard title="Absent" value={summary.absent} />
+                  <DashboardCard title="Leaves" value={summary.leave} />
                 </div>
               )}
 
+              {/* Attendance Percentage */}
               {summary && (
-                <div className="card card-glass mb-8">
-                  <div className="card-body">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-[rgba(59, 130, 246, 0.15)] rounded-xl flex items-center justify-center">
-                          <TrendingUp className="text-[var(--info)]" size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-[var(--text-primary)]">Overall Attendance</h3>
-                          <p className="text-sm text-[var(--text-muted)]">Your attendance performance</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-4xl font-bold text-[var(--text-primary)]">
-                          {summary.attendance_percentage}%
-                        </div>
-                        <div className={`text-sm font-semibold ${
-                          getAttendanceStatus(summary.attendance_percentage).color === 'emerald' ? 'text-[var(--primary)]' : 
-                          getAttendanceStatus(summary.attendance_percentage).color === 'amber' ? 'text-[var(--warning)]' : 
-                          'text-[var(--danger)]'
-                        }`}>
-                          {getAttendanceStatus(summary.attendance_percentage).label}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-4 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          summary.attendance_percentage >= 90 ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)]' :
-                          summary.attendance_percentage >= 75 ? 'bg-gradient-to-r from-[var(--warning)] to-amber-500' :
-                          'bg-gradient-to-r from-[var(--danger)] to-red-500'
-                        }`}
-                        style={{ width: `${Math.min(summary.attendance_percentage, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {report && (
-                <div className="card card-glass">
-                  <div className="card-header">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="text-[var(--info)]" size={24} />
-                        <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                          Monthly Report - {new Date(year, month - 1).toLocaleDateString('en-US', { 
-                            month: 'long', 
-                            year: 'numeric' 
-                          })}
-                        </h2>
-                      </div>
-                      <div className="flex gap-3">
-                        <select
-                          value={month}
-                          onChange={(e) => setMonth(Number(e.target.value))}
-                          className="input select w-auto"
-                        >
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
-                            <option key={m} value={m}>
-                              {new Date(2024, m - 1).toLocaleDateString('en-US', { month: 'long' })}
-                            </option>
-                          ))}
-                        </select>
-                        <select
-                          value={year}
-                          onChange={(e) => setYear(Number(e.target.value))}
-                          className="input select w-auto"
-                        >
-                          {[2023, 2024, 2025, 2026].map((y) => (
-                            <option key={y} value={y}>{y}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="card-body">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                      <div className="p-4 bg-[rgba(16, 185, 129, 0.15)] rounded-xl border border-[rgba(16, 185, 129, 0.3)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="text-[var(--primary)]" size={20} />
-                          <span className="text-sm font-medium text-[var(--text-secondary)]">Present</span>
-                        </div>
-                        <div className="text-3xl font-bold text-[var(--primary)]">{report.present}</div>
-                      </div>
-                      <div className="p-4 bg-[rgba(239, 68, 68, 0.15)] rounded-xl border border-[rgba(239, 68, 68, 0.3)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <XCircle className="text-[var(--danger)]" size={20} />
-                          <span className="text-sm font-medium text-[var(--text-secondary)]">Absent</span>
-                        </div>
-                        <div className="text-3xl font-bold text-[var(--danger)]">{report.absent}</div>
-                      </div>
-                      <div className="p-4 bg-[rgba(14, 165, 233, 0.15)] rounded-xl border border-[rgba(14, 165, 233, 0.3)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Clock className="text-sky-400" size={20} />
-                          <span className="text-sm font-medium text-[var(--text-secondary)]">Leave</span>
-                        </div>
-                        <div className="text-3xl font-bold text-sky-400">{report.leave}</div>
-                      </div>
-                      <div className="p-4 bg-[rgba(245, 158, 11, 0.15)] rounded-xl border border-[rgba(245, 158, 11, 0.3)]">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertCircle className="text-[var(--warning)]" size={20} />
-                          <span className="text-sm font-medium text-[var(--text-secondary)]">Half Day</span>
-                        </div>
-                        <div className="text-3xl font-bold text-[var(--warning)]">{report.half_day}</div>
-                      </div>
-                    </div>
-
-                    <div className="p-6 bg-[rgba(59, 130, 246, 0.15)] rounded-xl border border-[rgba(59, 130, 246, 0.3)] mb-8">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-[var(--text-secondary)] mb-1">Monthly Attendance Rate</p>
-                          <p className="text-xs text-[var(--text-muted)]">Based on {report.total_days} working days</p>
-                        </div>
-                        <div className="text-4xl font-bold text-[var(--info)]">{report.attendance_percentage}%</div>
-                      </div>
-                    </div>
-
+                <div className="bg-white rounded-lg shadow p-6 mb-8">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Daily Calendar View</h3>
-                      <div className="grid grid-cols-7 gap-2 mb-4">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                          <div key={day} className="text-center text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide py-2">
-                            {day}
-                          </div>
-                        ))}
-                        {report.daily_records.length > 0 ? (
-                          report.daily_records.map((record) => {
-                            const dateObj = new Date(record.date)
-                            const dayOfWeek = dateObj.getDay()
-                            const dayOfMonth = dateObj.getDate()
-                            
-                            return (
-                              <div
-                                key={record.id}
-                                className={`p-3 rounded-xl text-center border cursor-pointer hover:scale-105 transition-transform ${
-                                  record.status === 'present' ? 'bg-[rgba(16, 185, 129, 0.15)] text-[var(--primary)] border-[rgba(16, 185, 129, 0.3)]' :
-                                  record.status === 'absent' ? 'bg-[rgba(239, 68, 68, 0.15)] text-[var(--danger)] border-[rgba(239, 68, 68, 0.3)]' :
-                                  record.status === 'leave' ? 'bg-[rgba(14, 165, 233, 0.15)] text-sky-400 border-[rgba(14, 165, 233, 0.3)]' :
-                                  record.status === 'half_day' ? 'bg-[rgba(245, 158, 11, 0.15)] text-[var(--warning)] border-[rgba(245, 158, 11, 0.3)]' :
-                                  'bg-[var(--bg-tertiary)] text-[var(--text-muted)] border-[var(--border)]'
-                                }`}
-                                title={`${dayOfMonth} - ${record.status}`}
-                              >
-                                <div className="flex justify-center mb-1">
-                                  {getStatusIcon(record.status)}
-                                </div>
-                                <div className="text-sm font-semibold">{dayOfMonth}</div>
-                              </div>
-                            )
-                          })
-                        ) : (
-                          <div className="col-span-7 text-center text-[var(--text-muted)] py-8 bg-[var(--bg-tertiary)] rounded-xl">
-                            No records for this month
-                          </div>
-                        )}
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Overall Attendance</h3>
+                      <p className="text-gray-600 text-sm">Your overall attendance percentage</p>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-5xl font-bold ${getAttendancePercentageColor(summary.attendance_percentage)}`}>
+                        {summary.attendance_percentage}%
                       </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className={`h-3 rounded-full transition-all ${
+                        summary.attendance_percentage >= 90 ? 'bg-green-500' :
+                        summary.attendance_percentage >= 75 ? 'bg-yellow-500' :
+                        'bg-red-500'
+                      }`}
+                      style={{ width: `${Math.min(summary.attendance_percentage, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Monthly Report */}
+              {report && (
+                <div className="bg-white rounded-lg shadow p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Calendar size={24} className="text-blue-600" />
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      Monthly Report - {new Date(year, month - 1).toLocaleDateString('en-US', { 
+                        month: 'long', 
+                        year: 'numeric' 
+                      })}
+                    </h2>
+                  </div>
+
+                  {/* Month/Year Selector */}
+                  <div className="flex gap-4 mb-6">
+                    <select
+                      value={month}
+                      onChange={(e) => setMonth(Number(e.target.value))}
+                      className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
+                        <option key={m} value={m}>
+                          {new Date(2024, m - 1).toLocaleDateString('en-US', { month: 'long' })}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      value={year}
+                      onChange={(e) => setYear(Number(e.target.value))}
+                      className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {[2023, 2024, 2025, 2026].map((y) => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Statistics */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{report.present}</div>
+                      <div className="text-sm text-gray-600">Present</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{report.absent}</div>
+                      <div className="text-sm text-gray-600">Absent</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">{report.leave}</div>
+                      <div className="text-sm text-gray-600">Leave</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600">{report.half_day}</div>
+                      <div className="text-sm text-gray-600">Half Day</div>
+                    </div>
+                  </div>
+
+                  <div className="text-center p-4 bg-blue-50 rounded mb-6">
+                    <div className="text-3xl font-bold text-blue-600">{report.attendance_percentage}%</div>
+                    <div className="text-sm text-gray-600">Attendance Percentage</div>
+                  </div>
+
+                  {/* Daily Records */}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Records</h3>
+                    <div className="grid grid-cols-7 gap-2 mb-4">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        <div key={day} className="text-center text-sm font-semibold text-gray-600 p-2">
+                          {day}
+                        </div>
+                      ))}
+                      {report.daily_records.length > 0 ? (
+                        report.daily_records.map((record) => {
+                          const dateObj = new Date(record.date)
+                          const dayOfWeek = dateObj.getDay()
+                          const dayOfMonth = dateObj.getDate()
+                          
+                          const statusColor = {
+                            'present': 'bg-green-100 text-green-800',
+                            'absent': 'bg-red-100 text-red-800',
+                            'leave': 'bg-blue-100 text-blue-800',
+                            'half_day': 'bg-yellow-100 text-yellow-800'
+                          }[record.status] || 'bg-gray-100 text-gray-800'
+                          
+                          return (
+                            <div
+                              key={record.id}
+                              className={`p-2 rounded text-center text-sm font-medium ${statusColor}`}
+                              title={`${dayOfMonth} - ${record.status}`}
+                            >
+                              {dayOfMonth}
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <div className="col-span-7 text-center text-gray-600 py-4">
+                          No records for this month
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -286,3 +212,5 @@ export const AttendancePage = () => {
     </div>
   )
 }
+
+export default AttendancePage

@@ -228,3 +228,5 @@ export function HRCopilotPage() {
     </div>
   )
 }
+
+export default HRCopilotPage

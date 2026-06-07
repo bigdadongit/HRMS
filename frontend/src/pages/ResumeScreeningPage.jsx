@@ -577,3 +577,5 @@ export function ResumeScreeningPage() {
     </div>
   )
 }
+
+export default ResumeScreeningPage

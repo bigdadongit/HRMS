@@ -69,21 +69,31 @@ export function Sidebar() {
       admin: [
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Attendance', href: '/attendance', icon: Calendar },
-        { label: 'Leave Management', href: '/leaves', icon: FileText }
+        { label: 'Leaves', href: '/leaves', icon: FileText },
+        { label: 'Resume Screening', href: '/resume-screening', icon: FileText },
+        { label: 'Interview Analytics', href: '/interview-analytics', icon: FileText },
+        { label: 'HR Copilot', href: '/hr-copilot', icon: FileText },
+        { label: 'Reports', href: '/reports', icon: FileText },
+        { label: 'Settings', href: '/settings', icon: FileText }
       ],
       hr: [
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Attendance', href: '/attendance', icon: Calendar },
-        { label: 'Leave Management', href: '/leaves', icon: FileText }
+        { label: 'Leaves', href: '/leaves', icon: FileText },
+        { label: 'Resume Screening', href: '/resume-screening', icon: FileText },
+        { label: 'Interview Room', href: '/interview-room', icon: FileText },
+        { label: 'HR Copilot', href: '/hr-copilot', icon: FileText }
       ],
       manager: [
+        { label: 'Team', href: '/manager/dashboard', icon: Users },
         { label: 'Attendance', href: '/attendance', icon: Calendar },
-        { label: 'Leave Management', href: '/leaves', icon: FileText }
+        { label: 'Performance Reviews', href: '/performance', icon: FileText }
       ],
       employee: [
+        { label: 'My Profile', href: '/profile', icon: User },
         { label: 'Attendance', href: '/attendance', icon: Calendar },
-        { label: 'Leave Management', href: '/leaves', icon: FileText },
-        { label: 'My Profile', href: '/profile', icon: User }
+        { label: 'Leave Requests', href: '/leaves', icon: FileText },
+        { label: 'Performance Reviews', href: '/performance', icon: FileText }
       ]
     }
 
@@ -93,20 +103,20 @@ export function Sidebar() {
   const menuItems = getMenuItems()
 
   return (
-    <aside className="w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] h-screen fixed left-0 top-0 flex flex-col glass-strong">
+    <aside className="w-64 h-screen fixed left-0 top-0 flex flex-col glass-strong border-r border-[var(--border)]">
       <div className="p-5 border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-[var(--primary)] to-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">H</span>
+            <span className="text-white font-bold text-lg">W</span>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-[var(--text-primary)]">HRMS</h1>
-            <p className="text-xs text-[var(--text-muted)]">Enterprise Platform</p>
+            <h1 className="text-lg font-semibold text-[var(--text-primary)]">WorkForce Pro</h1>
+            <p className="text-xs text-[var(--text-muted)]">Enterprise HR made elegant</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-4">
+  <nav className="flex-1 p-4">
         {menuItems.map((item) => {
           const IconComponent = item.icon
           const isActive = location.pathname === item.href
@@ -117,7 +127,7 @@ export function Sidebar() {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-lg'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
+                  : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
               }`}
             >
               <IconComponent size={18} />
@@ -128,8 +138,8 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-[var(--border)]">
-        <div className="mb-4 p-4 bg-[var(--bg-tertiary)] rounded-xl border border-[var(--border)]">
-          <p className="text-xs text-[var(--text-muted)] truncate mb-1">{user?.email}</p>
+        <div className="mb-4 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] shadow-sm">
+          <p className="text-xs text-[var(--text-primary)] truncate mb-1">{user?.email}</p>
           <p className="text-xs font-medium text-[var(--primary)] capitalize">{user?.role}</p>
         </div>
         <button

@@ -3,12 +3,16 @@ HR Copilot Service for AI-powered HR Assistant
 Handles intent understanding, query building, and natural language responses
 """
 
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
 from app.models import Employee, Attendance, LeaveRequest, Resume, ResumeScreening, Interview, InterviewResult
 from app.models.user import db
 from flask import current_app
 from datetime import date, datetime
 import json
+import re
 
 
 class HRCopilotService:
@@ -17,6 +21,10 @@ class HRCopilotService:
     @staticmethod
     def understand_intent(query, api_key):
         """Understand user intent using Gemini"""
+        # If Gemini client is not available, use a simple rule-based fallback
+        if genai is None:
+            return HRCopilotService._rule_based_intent(query)
+
         try:
             # Configure Gemini
             genai.configure(api_key=api_key)
@@ -70,12 +78,8 @@ class HRCopilotService:
 
         except Exception as e:
             print(f"Gemini API error: {str(e)}")
-            # Return default intent if API fails
-            return {
-                "intent": "unknown",
-                "parameters": {},
-                "confidence": 0.0
-            }
+            # Fall back to rule-based parser when API fails
+            return HRCopilotService._rule_based_intent(query)
 
     @staticmethod
     def execute_query(intent, parameters):
@@ -125,6 +129,10 @@ class HRCopilotService:
     @staticmethod
     def generate_response(query, query_result, api_key):
         """Generate human-friendly response using Gemini"""
+        # If Gemini client is not available, format a simple response
+        if genai is None:
+            return HRCopilotService._format_simple_response(query, query_result)
+
         try:
             # Configure Gemini
             genai.configure(api_key=api_key)
@@ -313,8 +321,14 @@ class HRCopilotService:
             if not api_key:
                 raise ValueError('Gemini API key is required')
 
-            # Step 1: Understand intent
+            # Step 1: Understand intent (use fallback if Gemini missing or uncertain)
             intent_data = HRCopilotService.understand_intent(query, api_key)
+
+            # If intent is unknown or low confidence, try rule-based fallback
+            if not intent_data or intent_data.get('intent') == 'unknown' or intent_data.get('confidence', 0) < 0.4:
+                fallback = HRCopilotService._rule_based_intent(query)
+                if fallback and fallback.get('intent') != 'unknown':
+                    intent_data = fallback
             
             # Step 2: Execute query
             query_result = HRCopilotService.execute_query(
@@ -337,3 +351,41 @@ class HRCopilotService:
                 "intent": "error",
                 "query_result": {"error": str(e)}
             }
+
+    # --- Rule-based fallback intent parser ---
+    @staticmethod
+    def _rule_based_intent(query: str):
+        """Simple heuristic intent parser for common HR questions."""
+        q = query.lower().strip()
+
+        # employee count
+        if re.search(r"how many (employees|people) (joined|joined this month|joined this year|do we have)", q) or re.search(r"total employees|number of employees|employee count", q):
+            return {"intent": "employee_count", "parameters": {}, "confidence": 0.9}
+
+        # attendance below
+        m = re.search(r"attendance (below|less than) (\d{1,3})", q)
+        if m:
+            threshold = int(m.group(2))
+            return {"intent": "attendance_below", "parameters": {"threshold": threshold}, "confidence": 0.9}
+
+        # attendance summary
+        if "attendance" in q and ("summary" in q or "average" in q or "rate" in q):
+            return {"intent": "attendance_summary", "parameters": {}, "confidence": 0.8}
+
+        # pending leaves
+        if "pending" in q and "leave" in q:
+            return {"intent": "pending_leaves", "parameters": {}, "confidence": 0.8}
+
+        # leave summary
+        if "leave" in q and ("summary" in q or "statistics" in q or "how many leaves" in q):
+            return {"intent": "leave_summary", "parameters": {}, "confidence": 0.75}
+
+        # department stats
+        if "department" in q and ("most" in q or "which department" in q or "department stats" in q):
+            return {"intent": "department_stats", "parameters": {}, "confidence": 0.7}
+
+        # resume / top candidates
+        if "top candidates" in q or "resume" in q or "candidates" in q:
+            return {"intent": "top_candidates", "parameters": {}, "confidence": 0.6}
+
+        return {"intent": "unknown", "parameters": {}, "confidence": 0.0}

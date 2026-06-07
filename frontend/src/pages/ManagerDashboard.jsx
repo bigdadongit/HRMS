@@ -152,8 +152,37 @@ export function ManagerDashboard() {
               </div>
             </div>
           </div>
+
+          <div className="mt-4">
+            <div className="card card-glass">
+              <div className="card-header">
+                <h2 className="text-sm font-semibold text-[var(--text-primary)]">Team Members</h2>
+              </div>
+              <div className="card-body">
+                {dashboardData?.team_members && dashboardData.team_members.length > 0 ? (
+                  <ul className="space-y-2">
+                    {dashboardData.team_members.map((m) => (
+                      <li key={m.id} className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded">
+                        <div>
+                          <div className="text-sm font-medium text-[var(--text-primary)]">{m.first_name} {m.last_name}</div>
+                          <div className="text-xs text-[var(--text-muted)]">{m.email} · {m.department || '—'} · {m.designation || '—'}</div>
+                        </div>
+                        <div>
+                          <button onClick={() => navigate(`/employees/${m.id}`)} className="btn btn-sm btn-outline">Profile</button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-sm text-[var(--text-muted)]">No team members found.</div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   )
 }
+
+export default ManagerDashboard

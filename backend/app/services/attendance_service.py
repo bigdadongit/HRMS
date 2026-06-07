@@ -3,6 +3,7 @@ from app.models.user import db
 from datetime import datetime, date
 from sqlalchemy import and_, func
 from calendar import monthrange
+import uuid
 
 
 class AttendanceService:
@@ -17,9 +18,11 @@ class AttendanceService:
             if status not in valid_statuses:
                 raise ValueError(f'Invalid status. Must be one of: {", ".join(valid_statuses)}')
             
+            # Normalize employee id
+            emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
             # Check if attendance already marked
             existing = Attendance.query.filter_by(
-                employee_id=employee_id,
+                employee_id=emp_uuid,
                 date=attendance_date
             ).first()
 
@@ -27,7 +30,7 @@ class AttendanceService:
                 existing.status = status
             else:
                 existing = Attendance(
-                    employee_id=employee_id,
+                    employee_id=emp_uuid,
                     date=attendance_date,
                     status=status
                 )
@@ -61,21 +64,22 @@ class AttendanceService:
     @staticmethod
     def get_attendance_by_employee(employee_id: str, month: int = None, year: int = None, page: int = 1, per_page: int = 31) -> dict:
         """Get attendance records for an employee with pagination"""
-        query = Attendance.query.filter_by(employee_id=employee_id)
+        emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+        query = Attendance.query.filter_by(employee_id=emp_uuid)
 
         if month and year:
             # Get first and last day of month
             _, last_day = monthrange(year, month)
             first_date = date(year, month, 1)
             last_date = date(year, month, last_day)
-            
+
             query = query.filter(
                 and_(
                     Attendance.date >= first_date,
                     Attendance.date <= last_date
                 )
             )
-        
+
         query = query.order_by(Attendance.date.desc())
         total = query.count()
         records = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -112,9 +116,10 @@ class AttendanceService:
             first_date = date(year, month, 1)
             last_date = date(year, month, last_day)
             
+            emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
             records = Attendance.query.filter(
                 and_(
-                    Attendance.employee_id == employee_id,
+                    Attendance.employee_id == emp_uuid,
                     Attendance.date >= first_date,
                     Attendance.date <= last_date
                 )
@@ -146,7 +151,8 @@ class AttendanceService:
     def get_attendance_summary(employee_id: str) -> dict:
         """Get overall attendance summary"""
         try:
-            total = Attendance.query.filter_by(employee_id=employee_id).count()
+            emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+            total = Attendance.query.filter_by(employee_id=emp_uuid).count()
             
             if total == 0:
                 return {
@@ -159,10 +165,10 @@ class AttendanceService:
                     'attendance_percentage': 0.0
                 }
             
-            present = Attendance.query.filter_by(employee_id=employee_id, status='present').count()
-            absent = Attendance.query.filter_by(employee_id=employee_id, status='absent').count()
-            leave = Attendance.query.filter_by(employee_id=employee_id, status='leave').count()
-            half_day = Attendance.query.filter_by(employee_id=employee_id, status='half_day').count()
+            present = Attendance.query.filter_by(employee_id=emp_uuid, status='present').count()
+            absent = Attendance.query.filter_by(employee_id=emp_uuid, status='absent').count()
+            leave = Attendance.query.filter_by(employee_id=emp_uuid, status='leave').count()
+            half_day = Attendance.query.filter_by(employee_id=emp_uuid, status='half_day').count()
             
             attendance_percentage = round((present + half_day * 0.5) / total * 100, 2)
             
@@ -181,12 +187,13 @@ class AttendanceService:
     @staticmethod
     def get_attendance_rate(employee_id: str) -> float:
         """Get attendance rate for an employee (percentage of present days)"""
-        total = Attendance.query.filter_by(employee_id=employee_id).count()
+        emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+        total = Attendance.query.filter_by(employee_id=emp_uuid).count()
         if total == 0:
             return 0.0
 
         present = Attendance.query.filter_by(
-            employee_id=employee_id,
+            employee_id=emp_uuid,
             status='present'
         ).count()
 

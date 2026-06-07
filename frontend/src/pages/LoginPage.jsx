@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { authService } from '../services/authService'
 import { ErrorAlert, SuccessAlert } from '../components/shared'
-import { Lock, Mail, ArrowRight, Building2 } from 'lucide-react'
+import { ArrowRight, Building2 } from 'lucide-react'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -65,22 +65,19 @@ export function LoginPage() {
             {error && <ErrorAlert message={error} onDismiss={() => setError('')} />}
             {success && <SuccessAlert message={success} onDismiss={() => setSuccess('')} />}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="form-group">
                 <label htmlFor="email" className="form-label">
                   Email Address
                 </label>
-                <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 text-[var(--text-muted)]">
-                    <Mail size={20} />
-                  </div>
+                <div>
                   <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
-                    className="flex-1 bg-transparent px-4 py-4 placeholder:text-[var(--text-muted)] focus:outline-none"
+                    className="input h-12"
                     required
                   />
                 </div>
@@ -90,17 +87,14 @@ export function LoginPage() {
                 <label htmlFor="password" className="form-label">
                   Password
                 </label>
-                <div className="flex items-center bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 text-[var(--text-muted)]">
-                    <Lock size={20} />
-                  </div>
+                <div>
                   <input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="flex-1 bg-transparent px-4 py-4 placeholder:text-[var(--text-muted)] focus:outline-none"
+                    className="input h-12"
                     required
                   />
                 </div>
@@ -109,19 +103,18 @@ export function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 rounded-xl text-lg font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%)' }}
+                className="btn btn-primary w-full btn-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center gap-3">
-                    <div className="spinner w-5 h-5 border-2 border-white"></div>
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="spinner w-5 h-5 border-2"></div>
                     Signing in...
                   </span>
                 ) : (
-                  <div className="flex items-center justify-between">
-                    <span>Sign In</span>
-                    <ArrowRight size={20} />
-                  </div>
+                  <span className="flex items-center justify-center gap-2">
+                    Sign In
+                    <ArrowRight size={18} />
+                  </span>
                 )}
               </button>
             </form>
@@ -135,3 +128,5 @@ export function LoginPage() {
     </div>
   )
 }
+
+export default LoginPage

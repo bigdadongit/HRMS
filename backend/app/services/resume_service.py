@@ -7,7 +7,10 @@ import os
 import PyPDF2
 import pdfplumber
 from docx import Document
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
 from app.models import Resume, ResumeScreening
 from app.models.user import db
 from flask import current_app
@@ -64,6 +67,10 @@ class ResumeService:
     def analyze_resume_with_gemini(resume_text, jd_text, api_key):
         """Analyze resume using Gemini API"""
         try:
+            # If google generative AI client isn't available, return default analysis
+            if genai is None:
+                raise RuntimeError('Gemini client not available')
+
             # Configure Gemini
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-1.5-flash')

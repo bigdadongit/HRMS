@@ -1,3 +1,5 @@
+import uuid
+
 from app.models import LeaveRequest, LeaveBalance, Employee
 from app.models.user import db
 from datetime import date, datetime
@@ -22,8 +24,11 @@ class LeaveService:
             if start_date > end_date:
                 raise ValueError('Start date must be before end date')
             
+            # Normalize employee_id to UUID for queries
+            emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+
             # Get leave balance
-            leave_balance = LeaveBalance.query.filter_by(employee_id=employee_id).first()
+            leave_balance = LeaveBalance.query.filter_by(employee_id=emp_uuid).first()
             if not leave_balance:
                 raise ValueError('Employee leave balance not found')
             
@@ -38,7 +43,7 @@ class LeaveService:
                 raise ValueError(f'Insufficient {leave_type} balance. Available: {current_balance}, Requested: {days_requested}')
             
             leave_request = LeaveRequest(
-                employee_id=employee_id,
+                employee_id=emp_uuid,
                 start_date=start_date,
                 end_date=end_date,
                 leave_type=leave_type,
@@ -60,11 +65,13 @@ class LeaveService:
     @staticmethod
     def get_leave_requests_by_employee(employee_id: str, status: str = None, page: int = 1, per_page: int = 10) -> dict:
         """Get all leave requests for an employee with pagination"""
-        query = LeaveRequest.query.filter_by(employee_id=employee_id)
-        
+        # Normalize employee id for query
+        emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+        query = LeaveRequest.query.filter_by(employee_id=emp_uuid)
+
         if status:
             query = query.filter_by(status=status)
-        
+
         query = query.order_by(LeaveRequest.created_at.desc())
         total = query.count()
         records = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -95,11 +102,13 @@ class LeaveService:
     @staticmethod
     def get_team_leave_requests(employee_ids: list, page: int = 1, per_page: int = 10) -> dict:
         """Get leave requests for a team"""
-        query = LeaveRequest.query.filter(LeaveRequest.employee_id.in_(employee_ids))
+        # Normalize list of employee ids to UUIDs
+        emp_ids_uuid = [uuid.UUID(str(e)) for e in employee_ids]
+        query = LeaveRequest.query.filter(LeaveRequest.employee_id.in_(emp_ids_uuid))
         query = query.order_by(LeaveRequest.created_at.desc())
         total = query.count()
         records = query.paginate(page=page, per_page=per_page, error_out=False)
-        
+
         return {
             'data': [req.to_dict() for req in records.items],
             'total': total,
@@ -187,26 +196,28 @@ class LeaveService:
     @staticmethod
     def get_leave_balance(employee_id: str) -> dict:
         """Get leave balance for an employee"""
-        leave_balance = LeaveBalance.query.filter_by(employee_id=employee_id).first()
+        emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+        leave_balance = LeaveBalance.query.filter_by(employee_id=emp_uuid).first()
         if not leave_balance:
             raise ValueError('Employee leave balance not found')
-        
+
         return leave_balance.to_dict()
 
     @staticmethod
     def get_leave_history(employee_id: str, year: int = None, page: int = 1, per_page: int = 10) -> dict:
         """Get leave history for an employee"""
-        query = LeaveRequest.query.filter_by(employee_id=employee_id)
+        emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+        query = LeaveRequest.query.filter_by(employee_id=emp_uuid)
         query = query.filter(LeaveRequest.status.in_(['approved', 'rejected', 'cancelled']))
-        
+
         if year:
             query = query.filter(LeaveRequest.start_date >= date(year, 1, 1))
             query = query.filter(LeaveRequest.start_date <= date(year, 12, 31))
-        
+
         query = query.order_by(LeaveRequest.created_at.desc())
         total = query.count()
         records = query.paginate(page=page, per_page=per_page, error_out=False)
-        
+
         return {
             'data': [req.to_dict() for req in records.items],
             'total': total,
@@ -224,18 +235,19 @@ class LeaveService:
     def get_leaves_summary(employee_id: str) -> dict:
         """Get leave summary for an employee"""
         try:
-            leave_balance = LeaveBalance.query.filter_by(employee_id=employee_id).first()
+            emp_uuid = uuid.UUID(str(employee_id)) if employee_id is not None else None
+            leave_balance = LeaveBalance.query.filter_by(employee_id=emp_uuid).first()
             if not leave_balance:
                 raise ValueError('Employee leave balance not found')
             
             # Get approved leaves
             approved = LeaveRequest.query.filter_by(
-                employee_id=employee_id,
+                employee_id=emp_uuid,
                 status='approved'
             ).count()
             
             pending = LeaveRequest.query.filter_by(
-                employee_id=employee_id,
+                employee_id=emp_uuid,
                 status='pending'
             ).count()
             

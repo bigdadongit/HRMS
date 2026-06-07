@@ -4,12 +4,14 @@ import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './routes/ProtectedRoute'
 import { LoginPage } from './pages/LoginPage'
 import { UnauthorizedPage } from './pages/UnauthorizedPage'
+import HomePage from './pages/HomePage'
+import Header from './components/Header'
 import { AdminDashboard } from './pages/AdminDashboard'
 import { HRDashboard } from './pages/HRDashboard'
 import { ManagerDashboard } from './pages/ManagerDashboard'
 import { EmployeeDashboard } from './pages/EmployeeDashboard'
-import { EmployeeManagement } from './pages/EmployeeManagement'
-import { AttendancePage } from './pages/AttendancePage'
+import EmployeeManagement from './pages/EmployeeManagement'
+import AttendancePage from './pages/AttendancePage'
 import { LeaveManagementPage } from './pages/LeaveManagementPage'
 import { EmployeeProfilePage } from './pages/EmployeeProfilePage'
 import { ResumeScreeningPage } from './pages/ResumeScreeningPage'
@@ -17,12 +19,16 @@ import { InterviewRoomPage } from './pages/InterviewRoomPage'
 import { InterviewResultsPage } from './pages/InterviewResultsPage'
 import { InterviewAnalyticsPage } from './pages/InterviewAnalyticsPage'
 import { HRCopilotPage } from './pages/HRCopilotPage'
+import Reports from './pages/Reports'
+import Settings from './pages/Settings'
+import Performance from './pages/Performance'
 import './index.css'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <Header />
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -154,8 +160,39 @@ function App() {
             }
           />
 
+          {/* Reports - Admin only */}
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Settings - Admin only */}
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute requiredRoles={['admin']}>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Performance */}
+          <Route
+            path="/performance"
+            element={
+              <ProtectedRoute requiredRoles={['admin', 'hr', 'manager', 'employee']}>
+                <Performance />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Public homepage */}
+          <Route path="/" element={<HomePage />} />
           {/* Catch all - redirect to login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </AuthProvider>

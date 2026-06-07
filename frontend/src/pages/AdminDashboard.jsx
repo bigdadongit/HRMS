@@ -145,3 +145,5 @@ export function AdminDashboard() {
     </div>
   )
 }
+
+export default AdminDashboard

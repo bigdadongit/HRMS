@@ -84,11 +84,12 @@ def get_leave_request(leave_id):
         leave_request = LeaveService.get_leave_request_by_id(leave_id)
         if not leave_request:
             return error_response('Leave request not found', 404)
-        
+
         # Check authorization
-        if str(leave_request.employee_id) != EmployeeService.get_employee_by_user_id(user_id).id and user_role not in ['admin', 'hr']:
+        emp_of_user = EmployeeService.get_employee_by_user_id(user_id)
+        if str(leave_request.employee_id) != str(emp_of_user.id) and user_role not in ['admin', 'hr']:
             return error_response('Unauthorized access', 403)
-        
+
         return success_response(leave_request.to_dict(), 'Leave request retrieved successfully')
     except Exception as e:
         return error_response(f'Error retrieving leave request: {str(e)}', 500)
@@ -148,12 +149,12 @@ def cancel_leave(leave_id):
         leave_request = LeaveService.get_leave_request_by_id(leave_id)
         if not leave_request:
             return error_response('Leave request not found', 404)
-        
+
         # Check authorization - only employee or admin/hr can cancel
         employee = EmployeeService.get_employee_by_user_id(user_id)
         if str(leave_request.employee_id) != str(employee.id) and get_jwt().get('role') not in ['admin', 'hr']:
             return error_response('Unauthorized access', 403)
-        
+
         leave_request = LeaveService.cancel_leave_request(leave_id)
         return success_response(leave_request, 'Leave request cancelled successfully')
     except ValueError as e:
@@ -173,11 +174,11 @@ def get_leave_balance(employee_id):
         employee = EmployeeService.get_employee_by_id(employee_id)
         if not employee:
             return error_response('Employee not found', 404)
-        
+
         # Check authorization
-        if str(employee.user_id) != user_id and user_role not in ['admin', 'hr']:
+        if str(employee.user_id) != str(user_id) and user_role not in ['admin', 'hr']:
             return error_response('Unauthorized access', 403)
-        
+
         balance = LeaveService.get_leave_balance(employee_id)
         return success_response(balance, 'Leave balance retrieved successfully')
     except ValueError as e:
@@ -197,11 +198,11 @@ def get_leave_history(employee_id):
         employee = EmployeeService.get_employee_by_id(employee_id)
         if not employee:
             return error_response('Employee not found', 404)
-        
+
         # Check authorization
-        if str(employee.user_id) != user_id and user_role not in ['admin', 'hr', 'manager']:
+        if str(employee.user_id) != str(user_id) and user_role not in ['admin', 'hr', 'manager']:
             return error_response('Unauthorized access', 403)
-        
+
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         year = request.args.get('year', None, type=int)
@@ -229,11 +230,11 @@ def get_leaves_summary(employee_id):
         employee = EmployeeService.get_employee_by_id(employee_id)
         if not employee:
             return error_response('Employee not found', 404)
-        
+
         # Check authorization
-        if str(employee.user_id) != user_id and user_role not in ['admin', 'hr', 'manager']:
+        if str(employee.user_id) != str(user_id) and user_role not in ['admin', 'hr', 'manager']:
             return error_response('Unauthorized access', 403)
-        
+
         summary = LeaveService.get_leaves_summary(employee_id)
         return success_response(summary, 'Leave summary retrieved successfully')
     except ValueError as e:

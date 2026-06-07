@@ -19,4 +19,21 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+// Handle responses globally
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status
+    // Redirect on unauthorized / forbidden
+    if (status === 401) {
+      // token invalid or missing
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    } else if (status === 403) {
+      window.location.href = '/unauthorized'
+    }
+    return Promise.reject(error)
+  }
+)
+
 export default apiClient

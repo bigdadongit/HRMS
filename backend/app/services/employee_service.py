@@ -1,3 +1,4 @@
+import uuid
 from app.models import Employee, User, LeaveBalance
 from app.models.user import db
 from sqlalchemy.exc import IntegrityError
@@ -44,7 +45,13 @@ class EmployeeService:
     @staticmethod
     def get_employee_by_user_id(user_id: str) -> Employee:
         """Get employee profile by user ID"""
-        return Employee.query.filter_by(user_id=user_id).first()
+        try:
+            # ensure user_id is a UUID object when column is UUID(as_uuid=True)
+            uid = uuid.UUID(str(user_id))
+        except Exception:
+            return None
+
+        return Employee.query.filter_by(user_id=uid).first()
 
     @staticmethod
     def get_all_employees(page: int = 1, per_page: int = 10) -> dict:
@@ -86,7 +93,12 @@ class EmployeeService:
     @staticmethod
     def get_employee_by_id(employee_id: str) -> Employee:
         """Get employee by ID"""
-        return Employee.query.filter_by(id=employee_id).first()
+        try:
+            eid = uuid.UUID(str(employee_id))
+        except Exception:
+            return None
+
+        return Employee.query.filter_by(id=eid).first()
 
     @staticmethod
     def get_employee_by_email(email: str) -> Employee:
@@ -107,7 +119,13 @@ class EmployeeService:
     def update_employee(employee_id: str, **kwargs) -> dict:
         """Update employee details"""
         try:
-            employee = Employee.query.filter_by(id=employee_id).first()
+            # normalize id
+            try:
+                eid = uuid.UUID(str(employee_id))
+            except Exception:
+                raise ValueError('Invalid employee id')
+
+            employee = Employee.query.filter_by(id=eid).first()
             if not employee:
                 raise ValueError('Employee not found')
 
@@ -131,7 +149,12 @@ class EmployeeService:
     def delete_employee(employee_id: str) -> bool:
         """Soft delete employee (mark as terminated)"""
         try:
-            employee = Employee.query.filter_by(id=employee_id).first()
+            try:
+                eid = uuid.UUID(str(employee_id))
+            except Exception:
+                raise ValueError('Invalid employee id')
+
+            employee = Employee.query.filter_by(id=eid).first()
             if not employee:
                 raise ValueError('Employee not found')
             

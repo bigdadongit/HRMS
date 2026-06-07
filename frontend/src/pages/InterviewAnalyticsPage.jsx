@@ -211,3 +211,5 @@ export function InterviewAnalyticsPage() {
     </div>
   )
 }
+
+export default InterviewAnalyticsPage

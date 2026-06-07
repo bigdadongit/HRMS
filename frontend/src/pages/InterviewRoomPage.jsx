@@ -352,3 +352,5 @@ export function InterviewRoomPage() {
     </div>
   )
 }
+
+export default InterviewRoomPage

@@ -3,7 +3,10 @@ Interview Service for AI Interview System
 Handles question generation, answer evaluation, and interview management
 """
 
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
 from app.models import Interview, InterviewQuestion, InterviewAnswer, InterviewResult
 from app.models.user import db
 from flask import current_app
@@ -18,6 +21,10 @@ class InterviewService:
     def generate_questions(role, api_key, num_questions=10):
         """Generate interview questions using Gemini API"""
         try:
+            # If Gemini client isn't available, fall back
+            if genai is None:
+                raise RuntimeError('Gemini client not available')
+
             # Configure Gemini
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-1.5-flash')

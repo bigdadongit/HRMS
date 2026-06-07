@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Calendar, Check, X, Clock, FileText, Send, CalendarDays, Briefcase, Heart } from 'lucide-react'
+import { Calendar, Check, X, Clock } from 'lucide-react'
 import apiClient from '../services/api'
 import { DashboardCard, Sidebar, LoadingSpinner, ErrorAlert, SuccessAlert } from '../components/shared'
 import { useAuth } from '../hooks/useAuth'
 
 export const LeaveManagementPage = () => {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('apply')
+  const [activeTab, setActiveTab] = useState('apply') // apply, history, pending
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
@@ -125,67 +125,48 @@ export const LeaveManagementPage = () => {
   }
 
   const getStatusBadge = (status) => {
-    const statusConfig = {
-      'pending': { class: 'badge-warning', icon: Clock },
-      'approved': { class: 'badge-success', icon: Check },
-      'rejected': { class: 'badge-danger', icon: X },
-      'cancelled': { class: 'badge-info', icon: X }
-    }
-    const config = statusConfig[status] || statusConfig.cancelled
-    const Icon = config.icon
-    return (
-      <span className={`badge ${config.class} flex items-center gap-1`}>
-        <Icon size={12} />
-        {status}
-      </span>
-    )
-  }
-
-  const getLeaveTypeIcon = (type) => {
-    switch (type) {
-      case 'casual_leave': return <Briefcase size={16} />
-      case 'sick_leave': return <Heart size={16} />
-      case 'earned_leave': return <CalendarDays size={16} />
-      default: return <FileText size={16} />
-    }
+    const statusClass = {
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'approved': 'bg-green-100 text-green-800',
+      'rejected': 'bg-red-100 text-red-800',
+      'cancelled': 'bg-gray-100 text-gray-800'
+    }[status] || 'bg-gray-100 text-gray-800'
+    
+    return <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusClass}`}>{status}</span>
   }
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
+    <div className="flex h-screen bg-gray-100">
+  <Sidebar />
       
-      <div className="flex-1 ml-64">
+  <div className="flex-1 ml-64 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-[rgba(59, 130, 246, 0.15)] rounded-xl flex items-center justify-center">
-                <FileText className="text-[var(--info)]" size={20} />
-              </div>
-              <h1 className="text-3xl font-bold text-[var(--text-primary)]">Leave Management</h1>
-            </div>
-            <p className="text-[var(--text-secondary)] ml-13">Manage your leave requests and approvals</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Leave Management</h1>
+            <p className="text-gray-600">Manage your leave requests and approvals</p>
           </div>
 
           {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
           {success && <SuccessAlert message={success} onDismiss={() => setSuccess(null)} />}
 
-          <div className="flex gap-2 mb-8 bg-[var(--bg-secondary)] rounded-xl p-2 border border-[var(--border)] w-fit">
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6 border-b border-gray-200">
             <button
               onClick={() => { setActiveTab('apply'); setCurrentPage(1) }}
-              className={`px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+              className={`px-4 py-2 font-semibold border-b-2 transition-colors ${
                 activeTab === 'apply'
-                  ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
               Apply Leave
             </button>
             <button
               onClick={() => { setActiveTab('history'); setCurrentPage(1) }}
-              className={`px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+              className={`px-4 py-2 font-semibold border-b-2 transition-colors ${
                 activeTab === 'history'
-                  ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-md'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
               }`}
             >
               History
@@ -193,10 +174,10 @@ export const LeaveManagementPage = () => {
             {user?.role === 'hr' && (
               <button
                 onClick={() => { setActiveTab('pending'); setCurrentPage(1) }}
-                className={`px-6 py-3 rounded-lg font-medium text-sm transition-all ${
+                className={`px-4 py-2 font-semibold border-b-2 transition-colors ${
                   activeTab === 'pending'
-                    ? 'bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] text-white shadow-md'
-                    : 'text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900'
                 }`}
               >
                 Pending Requests
@@ -208,184 +189,145 @@ export const LeaveManagementPage = () => {
             <LoadingSpinner />
           ) : (
             <>
+              {/* Apply Leave Tab */}
               {activeTab === 'apply' && (
-                <div className="card card-glass">
-                  <div className="card-body">
-                    {balance && (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <DashboardCard 
-                          title="Casual Leave" 
-                          value={balance.casual_leave_balance} 
-                          color="blue"
-                          description="Days available"
-                        />
-                        <DashboardCard 
-                          title="Sick Leave" 
-                          value={balance.sick_leave_balance} 
-                          color="emerald"
-                          description="Days available"
-                        />
-                        <DashboardCard 
-                          title="Earned Leave" 
-                          value={balance.earned_leave_balance} 
-                          color="sky"
-                          description="Days available"
-                        />
-                      </div>
-                    )}
+                <div className="bg-white rounded-lg shadow p-6">
+                  {balance && (
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <DashboardCard title="Casual Leave" value={balance.casual_leave_balance} />
+                      <DashboardCard title="Sick Leave" value={balance.sick_leave_balance} />
+                      <DashboardCard title="Earned Leave" value={balance.earned_leave_balance} />
+                    </div>
+                  )}
 
-                    <form onSubmit={handleSubmitLeave} className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="form-group">
-                          <label className="form-label">Start Date</label>
-                          <input
-                            type="date"
-                            required
-                            value={formData.start_date}
-                            onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                            className="input"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">End Date</label>
-                          <input
-                            type="date"
-                            required
-                            value={formData.end_date}
-                            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                            className="input"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Leave Type</label>
-                        <select
+                  <form onSubmit={handleSubmitLeave} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input
+                          type="date"
                           required
-                          value={formData.leave_type}
-                          onChange={(e) => setFormData({ ...formData, leave_type: e.target.value })}
-                          className="input select"
-                        >
-                          <option value="casual_leave">Casual Leave</option>
-                          <option value="sick_leave">Sick Leave</option>
-                          <option value="earned_leave">Earned Leave</option>
-                        </select>
-                      </div>
-
-                      <div className="form-group">
-                        <label className="form-label">Reason</label>
-                        <textarea
-                          required
-                          rows="4"
-                          value={formData.reason}
-                          onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                          placeholder="Please provide reason for your leave..."
-                          className="input textarea"
+                          value={formData.start_date}
+                          onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input
+                          type="date"
+                          required
+                          value={formData.end_date}
+                          onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
 
-                      <button
-                        type="submit"
-                        className="btn btn-primary w-full btn-lg"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Leave Type</label>
+                      <select
+                        required
+                        value={formData.leave_type}
+                        onChange={(e) => setFormData({ ...formData, leave_type: e.target.value })}
+                        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <span className="flex items-center justify-center gap-2">
-                          <Send size={18} />
-                          Submit Leave Request
-                        </span>
-                      </button>
-                    </form>
-                  </div>
+                        <option value="casual_leave">Casual Leave</option>
+                        <option value="sick_leave">Sick Leave</option>
+                        <option value="earned_leave">Earned Leave</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                      <textarea
+                        required
+                        rows="4"
+                        value={formData.reason}
+                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                        placeholder="Please provide reason for your leave..."
+                        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-semibold"
+                    >
+                      Submit Leave Request
+                    </button>
+                  </form>
                 </div>
               )}
 
+              {/* History Tab */}
               {activeTab === 'history' && (
-                <div className="card card-glass">
-                  <div className="table-container">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Date Range</th>
-                          <th>Type</th>
-                          <th>Reason</th>
-                          <th>Status</th>
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Start Date</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">End Date</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Type</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Reason</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaves.map((leave) => (
+                        <tr key={leave.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4">{new Date(leave.start_date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4">{new Date(leave.end_date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-sm">{leave.leave_type.replace('_', ' ')}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{leave.reason}</td>
+                          <td className="px-6 py-4">{getStatusBadge(leave.status)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {leaves.map((leave) => (
-                          <tr key={leave.id}>
-                            <td>
-                              <div className="flex flex-col">
-                                <span className="font-medium text-[var(--text-primary)]">{new Date(leave.start_date).toLocaleDateString()}</span>
-                                <span className="text-sm text-[var(--text-muted)]">to {new Date(leave.end_date).toLocaleDateString()}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="flex items-center gap-2">
-                                {getLeaveTypeIcon(leave.leave_type)}
-                                <span className="text-sm text-[var(--text-secondary)]">{leave.leave_type.replace('_', ' ')}</span>
-                              </div>
-                            </td>
-                            <td className="text-sm text-[var(--text-secondary)] max-w-xs truncate">{leave.reason}</td>
-                            <td>{getStatusBadge(leave.status)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
 
+              {/* Pending Requests Tab */}
               {activeTab === 'pending' && user?.role === 'hr' && (
-                <div className="card card-glass">
-                  <div className="table-container">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Employee</th>
-                          <th>Date Range</th>
-                          <th>Type</th>
-                          <th>Actions</th>
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Employee</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Start Date</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">End Date</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Type</th>
+                        <th className="px-6 py-3 text-left font-semibold text-gray-700">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingLeaves.map((leave) => (
+                        <tr key={leave.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm">Employee {leave.employee_id.slice(0, 8)}</td>
+                          <td className="px-6 py-4 text-sm">{new Date(leave.start_date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-sm">{new Date(leave.end_date).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 text-sm">{leave.leave_type.replace('_', ' ')}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleApprove(leave.id)}
+                                className="text-green-600 hover:text-green-800 p-1"
+                              >
+                                <Check size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleReject(leave.id)}
+                                className="text-red-600 hover:text-red-800 p-1"
+                              >
+                                <X size={18} />
+                              </button>
+                            </div>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {pendingLeaves.map((leave) => (
-                          <tr key={leave.id}>
-                            <td>
-                              <span className="text-sm font-medium text-[var(--text-primary)]">Employee {leave.employee_id.slice(0, 8)}</span>
-                            </td>
-                            <td>
-                              <div className="flex flex-col">
-                                <span className="font-medium text-[var(--text-primary)]">{new Date(leave.start_date).toLocaleDateString()}</span>
-                                <span className="text-sm text-[var(--text-muted)]">to {new Date(leave.end_date).toLocaleDateString()}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="flex items-center gap-2">
-                                {getLeaveTypeIcon(leave.leave_type)}
-                                <span className="text-sm text-[var(--text-secondary)]">{leave.leave_type.replace('_', ' ')}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleApprove(leave.id)}
-                                  className="btn btn-sm btn-secondary text-[var(--primary)] hover:text-emerald-400 hover:border-emerald-400"
-                                >
-                                  <Check size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleReject(leave.id)}
-                                  className="btn btn-sm btn-secondary text-[var(--danger)] hover:text-red-500 hover:border-red-500"
-                                >
-                                  <X size={16} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </>
@@ -395,3 +337,5 @@ export const LeaveManagementPage = () => {
     </div>
   )
 }
+
+export default LeaveManagementPage

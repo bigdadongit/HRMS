@@ -100,12 +100,25 @@ def manager_dashboard():
         # Get pending team leaves
         from app.models import LeaveRequest
         team_leaves_pending = LeaveRequest.query.filter_by(status='pending').count()
+        # Attempt to resolve actual team members: prefer employees in same department as manager
+        team_members = []
+        try:
+            if employee.department:
+                dept_result = EmployeeService.get_employees_by_department(employee.department, page=1, per_page=20)
+                team_members = [e for e in dept_result.get('data', []) if e.get('id') != str(employee.id)]
+            else:
+                all_result = EmployeeService.get_all_employees(page=1, per_page=20)
+                team_members = [e for e in all_result.get('data', []) if e.get('id') != str(employee.id)]
+        except Exception:
+            # Fallback to empty list on any failure
+            team_members = []
         
         return success_response({
             'team_attendance': team_attendance,
             'team_performance': 'Excellent',  # Mock data - performance not implemented yet
             'team_size': team_size,
-            'team_leaves_pending': team_leaves_pending
+            'team_leaves_pending': team_leaves_pending,
+            'team_members': team_members
         }, 'Manager dashboard data retrieved')
 
     except Exception as e:

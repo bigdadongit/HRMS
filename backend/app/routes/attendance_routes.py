@@ -73,7 +73,7 @@ def get_employee_attendance(employee_id):
             return error_response('Employee not found', 404)
         
         # Check authorization
-        if str(employee.user_id) != user_id and user_role not in ['admin', 'hr', 'manager']:
+        if str(employee.user_id) != str(user_id) and user_role not in ['admin', 'hr', 'manager']:
             return error_response('Unauthorized access', 403)
         
         page = request.args.get('page', 1, type=int)
@@ -107,7 +107,7 @@ def get_monthly_report(employee_id):
             return error_response('Employee not found', 404)
         
         # Check authorization
-        if str(employee.user_id) != user_id and user_role not in ['admin', 'hr', 'manager']:
+        if str(employee.user_id) != str(user_id) and user_role not in ['admin', 'hr', 'manager']:
             return error_response('Unauthorized access', 403)
         
         month = request.args.get('month', date.today().month, type=int)

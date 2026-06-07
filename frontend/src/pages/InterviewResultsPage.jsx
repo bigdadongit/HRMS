@@ -233,3 +233,5 @@ export function InterviewResultsPage() {
     </div>
   )
 }
+
+export default InterviewResultsPage
