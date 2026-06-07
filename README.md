@@ -2,7 +2,7 @@
 
 AI-powered Human Resource Management System built for the FWC Hackathon.
 
-![WorkForce Pro hero image](assets/hero.png)
+![WorkForce Pro hero image](frontend/public/assets/hero.png)
 
 ## Features
 
