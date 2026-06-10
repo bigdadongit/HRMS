@@ -4,6 +4,10 @@ AI-powered Human Resource Management System built for the FWC Hackathon.
 
 ![WorkForce Pro hero image](frontend/public/assets/hero.png)
 
+## Demo Video
+
+https://drive.google.com/file/d/1WQO_G5DrKFHFh_qTpq6akI6uRsxpu1V6/view?usp=sharing
+
 ## Features
 
 - Authentication & Role-Based Access Control
